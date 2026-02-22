@@ -11,7 +11,7 @@ class StorePostRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +23,8 @@ class StorePostRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'categories' => 'required|array',
+            'text' => 'required|string',
+            'categories' => 'nullable|array',
             'categories.*' => 'exists:categories,id',
         ];
     }

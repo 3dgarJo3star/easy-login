@@ -26,11 +26,13 @@ class PostController extends Controller
     public function store(StorePostRequest $request) 
     {
         $post = Post::create([
-            ...$request->validated(),
+            'title'   => $request->title,
+            'text'    => $request->text,
             'user_id' => Auth::id()
         ]);
 
         $post->categories()->sync($request->categories ?? []);
+        
         return redirect()->route('posts.index')->with('success', 'Post created successfully');
     }
     
