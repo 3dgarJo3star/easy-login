@@ -58,7 +58,7 @@ class PostController extends Controller
 
         $post->update([
             'title' => $request->title,
-            'description' => $request->description
+            'text' => $request->text
         ]);
 
         $post->categories()->sync($request->categories ?? []);
