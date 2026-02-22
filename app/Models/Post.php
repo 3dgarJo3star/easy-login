@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 
 class Post extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasFactory;
 
-    public function users(): BelongsToMany
+    public function user(): BelongsTo
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsTo(User::class);
     }
 
     public function categories(): BelongsToMany
