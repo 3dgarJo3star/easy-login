@@ -1,38 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+@extends('layouts.app')
+@section('title', 'Dashboard')
+@section('content')
+    <div class="flex items-center justify-center py-10">
+        <x-card shadow="lg" class="w-full max-w-md">
+            <div class="text-center space-y-6">
+                <h1 class="text-3xl font-bold text-gray-800">
+                    Welcome 👋
+                </h1>
 
-    <div class="bg-white p-10 rounded-xl shadow-lg text-center w-full max-w-md space-y-6">
-        
-        <h1 class="text-3xl font-bold text-gray-800">
-            Welcome 👋
-        </h1>
+                <p class="text-gray-600">
+                    You are successfully logged in.
+                </p>
 
-        <p class="text-gray-600">
-            You are successfully logged in.
-        </p>
+                <x-button variant="primary" href="{{ route('posts.index') }}" fullWidth>
+                    Go to Posts
+                </x-button>
 
-        <!-- Botón ir a Posts -->
-        <a href="{{ route('posts.index') }}"
-           class="block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
-            Go to Posts
-        </a>
-
-        <!-- Logout -->
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button
-                class="w-full bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition">
-                Log out
-            </button>
-        </form>
-
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <x-button variant="danger" type="submit" fullWidth>
+                        Log out
+                    </x-button>
+                </form>
+            </div>
+        </x-card>
     </div>
-
-</body>
-</html>
+@endsection

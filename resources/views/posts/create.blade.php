@@ -1,186 +1,150 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Create Post</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
+@extends('layouts.app')
+@section('title', 'Create Post')
+@section('content')
+    <div class="flex justify-center items-center py-10">
+        <x-card class="w-full max-w-xl">
+            <h1 class="text-2xl font-bold mb-4">Create Post</h1>
 
-<body class="bg-gray-100 min-h-screen flex justify-center items-center">
+            @if ($errors->any())
+                <x-alert type="error" dismissible class="mb-4">
+                    <ul class="list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </x-alert>
+            @endif
 
-<div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-xl">
+            <form method="POST" action="{{ route('posts.store') }}">
+                @csrf
 
-    <h1 class="text-2xl font-bold mb-4">Create Post</h1>
-
-    @if ($errors->any())
-        <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>• {{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    <form method="POST" action="{{ route('posts.store') }}">
-        @csrf
-
-        <!-- TITLE -->
-        <input
-            name="title"
-            placeholder="Title"
-            value="{{ old('title') }}"
-            class="w-full border p-2 mb-3 rounded"
-        >
-
-        <!-- TEXT -->
-        <textarea
-            name="text"
-            placeholder="Text"
-            class="w-full border p-2 mb-3 rounded"
-        >{{ old('text') }}</textarea>
-
-        <!-- NEW CATEGORY -->
-        <label class="font-semibold">New Category</label>
-
-        <input
-            type="text"
-            name="new_category"
-            value="{{ old('new_category') }}"
-            placeholder="Write a new category..."
-            class="w-full border p-2 mb-4 rounded"
-        >
-
-        <!-- CATEGORY SELECTOR -->
-        <label class="font-semibold">Categories</label>
-
-        <!-- Selected Chips -->
-        <div id="selectedCategories"
-             class="flex flex-wrap gap-2 border rounded p-2 mb-2 min-h-[50px]">
-        </div>
-
-        <!-- Search -->
-        <input
-            type="text"
-            id="categorySearch"
-            placeholder="Search categories..."
-            class="w-full border p-2 rounded mb-2"
-        >
-
-        <!-- Dropdown -->
-        <div id="categoryList"
-             class="border rounded max-h-40 overflow-y-auto p-2 bg-white">
-
-            @foreach($categories as $category)
-                <div
-                    class="category-item cursor-pointer hover:bg-gray-100 p-1 rounded"
-                    data-id="{{ $category->id }}"
-                    data-name="{{ $category->name }}"
-                >
-                    {{ $category->name }}
+                <!-- Title Input -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                    <input
+                        name="title"
+                        placeholder="Enter post title"
+                        value="{{ old('title') }}"
+                        class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                    >
                 </div>
-            @endforeach
 
-        </div>
+                <!-- Text Area -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Content</label>
+                    <textarea
+                        name="text"
+                        placeholder="Write your post content..."
+                        rows="6"
+                        class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                    >{{ old('text') }}</textarea>
+                </div>
 
-        <!-- Hidden Inputs -->
-        <div id="hiddenInputs"></div>
+                <!-- New Category -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">New Category</label>
+                    <input
+                        type="text"
+                        name="new_category"
+                        value="{{ old('new_category') }}"
+                        placeholder="Create a new category..."
+                        class="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                </div>
 
-        <!-- BUTTONS -->
-        <div class="flex items-center mt-4">
+                <!-- Category Selector -->
+                <div class="mb-6" x-data="categorySelector()">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Categories</label>
 
-            <button
-                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                Save
-            </button>
+                    <!-- Selected Categories -->
+                    <div class="flex flex-wrap gap-2 border border-gray-300 rounded-lg p-3 mb-2 min-h-[60px] bg-gray-50">
+                        <template x-for="category in selected" :key="category.id">
+                            <div class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full flex items-center gap-2 text-sm">
+                                <span x-text="category.name"></span>
+                                <button type="button" @click="removeCategory(category.id)" class="text-blue-900 font-bold hover:text-blue-700">
+                                    ×
+                                </button>
+                            </div>
+                        </template>
+                    </div>
 
-            <a href="{{ route('posts.index') }}"
-               class="ml-3 text-gray-600">
-                Cancel
-            </a>
+                    <!-- Search -->
+                    <input
+                        type="text"
+                        x-model="search"
+                        @input="filterCategories"
+                        placeholder="Search categories..."
+                        class="w-full border border-gray-300 p-3 rounded-lg mb-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
 
-        </div>
+                    <!-- Category List -->
+                    <div class="border border-gray-300 rounded-lg max-h-40 overflow-y-auto p-2 bg-white">
+                        <template x-for="category in filteredCategories" :key="category.id">
+                            <div
+                                @click="addCategory(category)"
+                                class="cursor-pointer hover:bg-gray-100 p-2 rounded"
+                                :class="{'bg-gray-50': isSelected(category.id)}"
+                            >
+                                <span x-text="category.name"></span>
+                            </div>
+                        </template>
+                    </div>
 
-    </form>
+                    <!-- Hidden Inputs -->
+                    <template x-for="category in selected" :key="category.id">
+                        <input type="hidden" name="categories[]" :value="category.id">
+                    </template>
+                </div>
 
-</div>
+                <!-- Action Buttons -->
+                <div class="flex items-center space-x-3">
+                    <x-button variant="primary" type="submit">
+                        Save Post
+                    </x-button>
+                    <x-button variant="outline" href="{{ route('posts.index') }}">
+                        Cancel
+                    </x-button>
+                </div>
+            </form>
+        </x-card>
+    </div>
 
-<script>
-
-const selectedContainer = document.getElementById('selectedCategories');
-const hiddenInputs = document.getElementById('hiddenInputs');
-const items = document.querySelectorAll('.category-item');
-const search = document.getElementById('categorySearch');
-
-let selected = new Set();
-
-items.forEach(item => {
-
-    item.addEventListener('click', () => {
-
-        const id = item.dataset.id;
-        const name = item.dataset.name;
-
-        if (selected.has(id)) return;
-
-        selected.add(id);
-
-        // chip
-        const chip = document.createElement('div');
-        chip.className =
-            "bg-blue-100 text-blue-700 px-3 py-1 rounded-full flex items-center gap-2 text-sm";
-
-        chip.innerHTML = `
-            ${name}
-            <button type="button"
-                class="text-blue-900 font-bold"
-                onclick="removeCategory('${id}', this)">
-                ×
-            </button>
-        `;
-
-        selectedContainer.appendChild(chip);
-
-        // hidden input
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'categories[]';
-        input.value = id;
-        input.id = 'input-' + id;
-
-        hiddenInputs.appendChild(input);
-    });
-
-});
-
-
-function removeCategory(id, btn) {
-
-    selected.delete(id);
-
-    document.getElementById('input-' + id)?.remove();
-    btn.parentElement.remove();
-
-}
-
-
-// search filter
-search.addEventListener('input', () => {
-
-    const term = search.value.toLowerCase();
-
-    items.forEach(item => {
-
-        const name = item.dataset.name.toLowerCase();
-
-        item.style.display =
-            name.includes(term) ? 'block' : 'none';
-
-    });
-
-});
-
-</script>
-
-</body>
-</html>
+    @push('scripts')
+    <script>
+        function categorySelector() {
+            return {
+                search: '',
+                selected: [],
+                categories: @json($categories),
+                
+                get filteredCategories() {
+                    if (!this.search) return this.categories;
+                    return this.categories.filter(cat => 
+                        cat.name.toLowerCase().includes(this.search.toLowerCase())
+                    );
+                },
+                
+                addCategory(category) {
+                    if (!this.isSelected(category.id)) {
+                        this.selected.push(category);
+                    }
+                },
+                
+                removeCategory(id) {
+                    this.selected = this.selected.filter(cat => cat.id !== id);
+                },
+                
+                isSelected(id) {
+                    return this.selected.some(cat => cat.id === id);
+                },
+                
+                filterCategories() {
+                    // This is handled by the computed property
+                }
+            }
+        }
+    </script>
+    @endpush
+@endsection
