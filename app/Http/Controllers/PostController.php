@@ -32,6 +32,21 @@ class PostController extends Controller
         ]);
 
         $post->categories()->sync($request->categories ?? []);
+
+        $categoryIds = $request->categories ?? [];
+
+        if ($request->filled('new_category')) {
+
+            $newCategory = Category::firstOrCreate([
+                'name' => $request->new_category
+            ]);
+
+            $categoryIds[] = $newCategory->id;
+        }
+
+        if (!empty($categoryIds)) {
+            $post->categories()->sync($categoryIds);
+        }
         
         return redirect()->route('posts.index')->with('success', 'Post created successfully');
     }
@@ -54,19 +69,30 @@ class PostController extends Controller
 
     public function update(UpdatePostRequest $request, Post $post)
     {
-        if ($post->user_id !== Auth::id()) {
-            abort(403);
-        }
-
         $post->update([
             'title' => $request->title,
-            'text' => $request->text
+            'text' => $request->text,
         ]);
 
-        $post->categories()->sync($request->categories ?? []);
+        if ($request->filled('new_category')) {
+
+            $category = Category::firstOrCreate([
+                'name' => $request->new_category
+            ]);
+
+            $categories = $request->categories ?? [];
+
+            $categories[] = $category->id;
+
+        } else {
+
+            $categories = $request->categories ?? [];
+        }
+
+        $post->categories()->sync($categories);
 
         return redirect()
-            ->route('posts.index')
+            ->route('posts.show', $post)
             ->with('success', 'Post updated successfully');
     }
 

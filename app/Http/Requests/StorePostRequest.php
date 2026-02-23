@@ -26,6 +26,7 @@ class StorePostRequest extends FormRequest
             'text' => 'required|string',
             'categories' => 'nullable|array',
             'categories.*' => 'exists:categories,id',
+            'new_category' => 'nullable|string|max:255'
         ];
     }
 }
