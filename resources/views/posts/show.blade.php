@@ -18,7 +18,7 @@
     </p>
 
     <p class="text-sm text-gray-400">
-        By {{ $post->user->name }} • {{ $post->created_at->format('d M Y') }}
+        By {{ $post->user->username }} • {{ $post->created_at->format('d M Y') }}
     </p>
 
     <div class="mt-4 flex flex-wrap gap-2">
